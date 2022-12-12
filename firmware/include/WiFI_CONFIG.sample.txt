@@ -2,3 +2,7 @@
 
 #define WIFI_SSID "something"
 #define WIFI_PASS "secrets!"
+#define WIFI_HOSTNAME "esp-something"
+
+#define OTA_PORT 8266
+#define OTA_PASS "password"

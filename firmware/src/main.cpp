@@ -19,6 +19,13 @@ void setup_WIFI() {
   Serial.println(WiFi.localIP());
 }
 
+void setup_OTA() {
+  ArduinoOTA.setHostname(WIFI_HOSTNAME);
+  ArduinoOTA.setPort(OTA_PORT);
+  ArduinoOTA.setPassword(OTA_PASS);
+  ArduinoOTA.begin();
+}
+
 void setup() {
   Serial.begin(115200);
   delay(250);
@@ -27,8 +34,7 @@ void setup() {
   
   setup_WIFI();
   if (WiFi.status() == WL_CONNECTED)
-    ArduinoOTA.begin();
-
+    setup_OTA();
   // Ultrasonic
   pinMode(ULTRA_TRIGGER_PIN, OUTPUT);
   pinMode(ULTRA_ECHO_PIN, INPUT);

@@ -14,7 +14,7 @@
 #define NEO7_DATA_PIN     15
 #define BLUE_LED_PIN      2
 
-#define NORMAL_LED_BLINK  500
+#define NORMAL_LED_BLINK  1000
 #define ERROR_LED_BLINK   100
 
 // Neo7Segment (Neo7Segment.h)
