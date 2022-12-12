@@ -1,49 +1,18 @@
-#include <Arduino.h>
 #include "Main.h"
-#include <NewPing.h>
-// #include <NeoPixelBus.h>
-// const uint16_t PixelCount = 29; // this example assumes 4 pixels, making it smaller will cause a failure
-// const uint8_t PixelPin = NEO7_DATA_PIN;  // make sure to set this to the correct pin, ignored for Esp8266
-// NeoPixelBus<NeoGrbFeature, NeoEsp8266BitBang800KbpsMethod> strip(PixelCount, PixelPin);
-
-#include <Neo7Segment.h>
-
-#define PIXELS_DIGITS       3   // Number of digits
-#define PIXELS_PER_SEGMENT  4   // If you want more than 10 pixels per segment, modify the Neo7Segment_Var.cpp
-#define PIXELS_PER_POINT    1   // CANNOT be higher than PIXELS_PER_SEGMENT
-#define PIXELS_PIN          NEO7_DATA_PIN   // Pin number
-
-Neo7Segment disp(PIXELS_DIGITS, PIXELS_PER_SEGMENT, PIXELS_PER_POINT, PIXELS_PIN);
-
-#define MOTION 0x1
-#define NO_MOTION 0x0
-#define MAX_DISTANCE 200 
-
-NewPing sonar(ULTRA_TRIGGER_PIN, ULTRA_ECHO_PIN, MAX_DISTANCE); // NewPing setup of pins and maximum distance.
-
-unsigned int pingSpeed = 50; // How frequently are we going to send out a ping (in milliseconds). 50ms would be 20 times a second.
-unsigned long pingTimer;     // Holds the next ping time.
-
 
 void setup() {
   Serial.begin(115200);
   delay(500);
-  Serial.println("\n\nSetting up ranger");
+
+  // Ultrasonic
   pinMode(ULTRA_TRIGGER_PIN, OUTPUT);
   pinMode(ULTRA_ECHO_PIN, INPUT);
-
-  Serial.println("Set up PIR");
+  // PIR
   pinMode(PIR_MOTION_PIN, INPUT);
-
+  // Keep Alive LED
   pinMode(BLUE_LED_PIN, OUTPUT);
-  pingTimer = millis(); // Start now.
-
-    // this resets all the neopixels to an off state
-  // strip.Begin();
-  // strip.Show();
-
-    // Start the display with a brightness value of 20
-  disp.Begin(20);
+  // Neo7Segment
+  disp.Begin(32);
   if ( !disp.IsReady() )
     Serial.println("Neo7Segment Error...");
 }
@@ -59,11 +28,17 @@ bool check_motion_PIR() {
   return previous_motion;
 }
 
-void neo7_display_value(uint8_t value) {
+void neo7_display_value(uint16_t value) {
+  static uint16_t previous_value = 0;
   char count_string[4];
   sprintf(count_string, "%03d", value);
   String digit = String( count_string );
   uint8_t r,g,b;
+
+  // only do Neo updates when the value changes (especially useful for off)
+  if (previous_value == value)
+    return;
+  previous_value = value;
 
   if (value >= 60) {
     r = 255;
@@ -115,14 +90,14 @@ void loop() {
   if (check_motion_PIR() == MOTION)
     motion_timeout = millis();
 
-  if (millis() - motion_timeout <= 60000) {
+  if (millis() - motion_timeout <= MOTION_TIMEOUT_MILLISECONDS) {
     static uint32_t previous_ping = 0;
     if (millis() - previous_ping >= 500){
-      uint32_t ping_measurement = sonar.ping_cm();
-      neo7_display_value(uint8_t(ping_measurement));
-      Serial.print("Ping: ");
-      Serial.print(ping_measurement); // Send ping, get distance in cm and print result (0 = outside set distance range)
-      Serial.println("cm");
+      uint32_t ping_measurement = sonar.ping_cm(); // returns 0 if too big
+      if (ping_measurement == 0)
+        ping_measurement = 888;
+      neo7_display_value(uint16_t(ping_measurement));
+      Serial.print("Ping: "); Serial.println(ping_measurement); 
       previous_ping = millis();
     } 
   } else {
