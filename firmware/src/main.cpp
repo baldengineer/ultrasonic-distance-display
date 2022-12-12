@@ -1,8 +1,29 @@
-#include "Main.h"
+#include <Main.h>
+#include <ArduinoOTA.h>
+#include <ESP8266WiFi.h>
+#include <WIFI_CONFIG.h>
 
 void setup() {
   Serial.begin(115200);
   delay(500);
+
+  WiFi.begin(WIFI_SSID, WIFI_PASS);
+
+  uint8_t notConnectedCounter = 0;
+  Serial.print("WiFi connecting...");
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(100);
+    Serial.print(".");
+    notConnectedCounter++;
+    if(notConnectedCounter > 128) { // Reset board if not connected after 5s
+        Serial.println("WiFi Failed");
+        //ESP.restart();
+        while(1);
+    }
+  }
+  Serial.print("Connected!\nIP:");
+  Serial.println(WiFi.localIP());
+  ArduinoOTA.begin();
 
   // Ultrasonic
   pinMode(ULTRA_TRIGGER_PIN, OUTPUT);
@@ -78,6 +99,7 @@ void neo7_display_value(uint16_t value) {
 }
 
 void loop() {
+  ArduinoOTA.handle();
   static uint32_t previous_millis = 0;
   static bool led_state = true;
   if (millis() - previous_millis >= 500) {

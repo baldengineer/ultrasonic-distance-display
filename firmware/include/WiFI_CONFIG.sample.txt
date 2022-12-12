@@ -1,0 +1,4 @@
+// rename to WIFI_CONFIG.h (after filling out the things)
+
+#define WIFI_SSID "something"
+#define WIFI_PASS "secrets!"

@@ -3,3 +3,4 @@ firmware/lib/README
 firmware/test/README
 mechanical/neo7v1.3mf
 firmware/.vscode/extensions.json
+firmware/include/WIFI_CONFIG.h
