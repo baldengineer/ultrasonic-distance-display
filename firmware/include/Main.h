@@ -1,4 +1,3 @@
-#include <NeoPixelBus.h>
 
 #define ULTRA_TRIGGER_PIN 0
 #define ULTRA_ECHO_PIN    14
@@ -6,19 +5,6 @@
 #define NEO7_DATA_PIN     15
 #define BLUE_LED_PIN      2
 
-#define colorSaturation 32
-
-RgbColor red(colorSaturation, 0, 0);
-RgbColor green(0, colorSaturation, 0);
-RgbColor blue(0, 0, colorSaturation);
-RgbColor white(colorSaturation);
-RgbColor black(0);
-
-HslColor hslRed(red);
-HslColor hslGreen(green);
-HslColor hslBlue(blue);
-HslColor hslWhite(white);
-HslColor hslBlack(black);
 /*
 https://learn.adafruit.com/adafruit-feather-huzzah-esp8266/pinouts
 

@@ -15,8 +15,6 @@
 
 Neo7Segment disp(PIXELS_DIGITS, PIXELS_PER_SEGMENT, PIXELS_PER_POINT, PIXELS_PIN);
 
-
-
 #define MOTION 0x1
 #define NO_MOTION 0x0
 #define MAX_DISTANCE 200 
@@ -46,10 +44,9 @@ void setup() {
 
     // Start the display with a brightness value of 20
   disp.Begin(20);
-
+  if ( !disp.IsReady() )
+    Serial.println("Neo7Segment Error...");
 }
-
-const RgbColor colors[] = {red,green,blue,white};
 
 bool check_motion_PIR() {
   static bool previous_motion = false;
@@ -62,71 +59,50 @@ bool check_motion_PIR() {
   return previous_motion;
 }
 
-// void single_pixel_ping_please() {
-//   #define pixel_wait 500
-//   while(1) {
-//     strip.SetPixelColor(28, black);
-//     strip.SetPixelColor(0,white);
-//     strip.Show();
-//     delay(pixel_wait);
-//     for (int outer_loop=1; outer_loop < PixelCount; outer_loop++) {
-//       strip.SetPixelColor(outer_loop-1, black);
-//       strip.SetPixelColor(outer_loop, white);
-//       strip.Show();
-//       delay(pixel_wait);
-//     }
-//     strip.SetPixelColor(27,black);
-//     strip.SetPixelColor(28, white);
-//     strip.Show();
-//     delay(pixel_wait*4);
-//   }
-// }
+void neo7_display_value(uint8_t value) {
+  char count_string[4];
+  sprintf(count_string, "%03d", value);
+  String digit = String( count_string );
+  uint8_t r,g,b;
 
-// void neopixelbus_color_change() {
-//     static byte color_index = 0;
-//   for (int x=0; x < PixelCount; x++) {
-//     strip.SetPixelColor(x, colors[color_index]);
-//   }
-//   color_index++;
-//   if (color_index >=4)
-//     color_index = 0;
-//   strip.Show();
-//   delay(1000);
-// }
+  if (value >= 60) {
+    r = 255;
+    g = 255;
+    b = 255;
+  } 
+
+  if ((value < 60 ) && (value >= 10)) {
+    r = 0;
+    g = 255;
+    b = 0;
+  }
+
+  if ((value < 10)) {
+    r = 255;
+    g = 0;
+    b = 0;
+  }
+
+  bool motion_state = check_motion_PIR();
+  if (value == 0) {
+    disp.SetDigit(0," ", disp.Color(0,0,0));
+    disp.SetDigit(1," ", disp.Color(0,0,0));
+    if (motion_state)
+      disp.SetDigit(2,".", disp.Color(128,128,128));  
+    else 
+      disp.SetDigit(2," ", disp.Color(0,0,0));
+  } else {
+    // left to right
+    disp.SetDigit(0,String(digit.charAt(0)), disp.Color(r,g,b));
+    disp.SetDigit(1,String(digit.charAt(1)), disp.Color(r,g,b));
+    if (motion_state)
+     disp.SetDigit(2,(String(digit.charAt(2)) + "."), disp.Color(r,g,b)); 
+    else
+     disp.SetDigit(2,String(digit.charAt(2)), disp.Color(r,g,b));
+  }
+}
 
 void loop() {
-  static uint32_t display_count = 100;
-  // single_pixel_ping_please();
-  if ( !disp.IsReady() )
-    return;
-
-  static unsigned long previous_count = 0;
-  if (millis() - previous_count >= 100) {
-    Serial.print("display_count: "); 
-    Serial.println(display_count);
-    display_count++;
-    if (display_count > 128)
-      display_count = 0;
-
-    String dot = ( ( display_count%2 ) == 0 ) ? "." : "";
-    char count_string[4];
-    sprintf(count_string, "%03lu", display_count);
-    String digit = String( count_string );
-    Serial.print("count_string: ");
-    Serial.println(count_string);
-    Serial.print("digit: ");
-    Serial.println(digit);    
-    
-
-    disp.SetDigit(0,String(digit.charAt(0)), disp.Color(255,255,255));
-    disp.SetDigit(1,String(digit.charAt(1)), disp.Color(255,255,255));
-    disp.SetDigit(2,String(digit.charAt(2)), disp.Color(255,255,255));
-
-    previous_count = millis();
-  }  
-
-
-
   static uint32_t previous_millis = 0;
   static bool led_state = true;
   if (millis() - previous_millis >= 500) {
@@ -135,14 +111,22 @@ void loop() {
     digitalWrite(BLUE_LED_PIN, led_state);
   }
 
-  if (check_motion_PIR() == MOTION) {
+  static uint32_t motion_timeout = 0;
+  if (check_motion_PIR() == MOTION)
+    motion_timeout = millis();
+
+  if (millis() - motion_timeout <= 60000) {
     static uint32_t previous_ping = 0;
     if (millis() - previous_ping >= 500){
+      uint32_t ping_measurement = sonar.ping_cm();
+      neo7_display_value(uint8_t(ping_measurement));
       Serial.print("Ping: ");
-      Serial.print(sonar.ping_cm()); // Send ping, get distance in cm and print result (0 = outside set distance range)
+      Serial.print(ping_measurement); // Send ping, get distance in cm and print result (0 = outside set distance range)
       Serial.println("cm");
       previous_ping = millis();
-    }
+    } 
+  } else {
+      neo7_display_value(0);
   }
 }
 
