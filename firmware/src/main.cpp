@@ -1,12 +1,6 @@
 #include <Main.h>
-#include <ArduinoOTA.h>
-#include <ESP8266WiFi.h>
-#include <WIFI_CONFIG.h>
 
-void setup() {
-  Serial.begin(115200);
-  delay(500);
-
+void setup_WIFI() {
   WiFi.begin(WIFI_SSID, WIFI_PASS);
 
   uint8_t notConnectedCounter = 0;
@@ -18,12 +12,22 @@ void setup() {
     if(notConnectedCounter > 128) { // Reset board if not connected after 5s
         Serial.println("WiFi Failed");
         //ESP.restart();
-        while(1);
+        //while(1);
     }
   }
   Serial.print("Connected!\nIP:");
   Serial.println(WiFi.localIP());
-  ArduinoOTA.begin();
+}
+
+void setup() {
+  Serial.begin(115200);
+  delay(250);
+
+  Serial.println("\n\nUltrasonic Distance Display (Now in Colour)");
+  
+  setup_WIFI();
+  if (WiFi.status() == WL_CONNECTED)
+    ArduinoOTA.begin();
 
   // Ultrasonic
   pinMode(ULTRA_TRIGGER_PIN, OUTPUT);
@@ -51,7 +55,7 @@ bool check_motion_PIR() {
 
 void neo7_display_value(uint16_t value) {
   static uint16_t previous_value = 0;
-  char count_string[4];
+  char count_string[6];
   sprintf(count_string, "%03d", value);
   String digit = String( count_string );
   uint8_t r,g,b;
@@ -98,16 +102,26 @@ void neo7_display_value(uint16_t value) {
   }
 }
 
-void loop() {
-  ArduinoOTA.handle();
+void led_keep_alive() {
   static uint32_t previous_millis = 0;
   static bool led_state = true;
-  if (millis() - previous_millis >= 500) {
+  uint32_t led_delay = ERROR_LED_BLINK;
+
+  if (WiFi.status() == WL_CONNECTED)
+    led_delay = NORMAL_LED_BLINK;
+
+  if (millis() - previous_millis >= led_delay) {
     previous_millis = millis();
     led_state = !led_state;
     digitalWrite(BLUE_LED_PIN, led_state);
   }
+}
 
+void loop() {
+  if (WiFi.status() == WL_CONNECTED)
+    ArduinoOTA.handle();
+
+  led_keep_alive();
   static uint32_t motion_timeout = 0;
   if (check_motion_PIR() == MOTION)
     motion_timeout = millis();

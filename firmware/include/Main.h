@@ -1,15 +1,21 @@
 #include <Arduino.h>
 #include <Neo7Segment.h>
 #include <NewPing.h>
+#include <ArduinoOTA.h>
+#include <ESP8266WiFi.h>
+#include <WIFI_CONFIG.h>
 
 // Generic
-#define MOTION 0x1
-#define NO_MOTION 0x0
+#define MOTION            0x1
+#define NO_MOTION         0x0
 #define ULTRA_TRIGGER_PIN 0
 #define ULTRA_ECHO_PIN    14
 #define PIR_MOTION_PIN    12
 #define NEO7_DATA_PIN     15
 #define BLUE_LED_PIN      2
+
+#define NORMAL_LED_BLINK  500
+#define ERROR_LED_BLINK   100
 
 // Neo7Segment (Neo7Segment.h)
 #define PIXELS_PIN          NEO7_DATA_PIN   // Pin number
