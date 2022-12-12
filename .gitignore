@@ -1,0 +1,6 @@
+firmware/src/main.cpp
+firmware/include/README
+firmware/lib/README
+firmware/test/README
+mechanical/neo7v1.3mf
+firmware/.vscode/extensions.json
