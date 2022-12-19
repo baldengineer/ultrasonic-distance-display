@@ -5,6 +5,8 @@
 #include <ESP8266WiFi.h>
 #include <WIFI_CONFIG.h>
 
+#ifndef MAIN_H
+#define MAIN_H
 // Generic
 #define MOTION            0x1
 #define NO_MOTION         0x0
@@ -22,14 +24,12 @@
 #define PIXELS_DIGITS       3   // Number of digits
 #define PIXELS_PER_SEGMENT  4   // If you want more than 10 pixels per segment, modify the Neo7Segment_Var.cpp
 #define PIXELS_PER_POINT    1   // CANNOT be higher than PIXELS_PER_SEGMENT
-Neo7Segment disp(PIXELS_DIGITS, PIXELS_PER_SEGMENT, PIXELS_PER_POINT, PIXELS_PIN);
 
 // Ultrasonic Sensor (NewPing.h)
 #define MOTION_TIMEOUT_MILLISECONDS 15000
 #define MAX_DISTANCE 200
-NewPing sonar(ULTRA_TRIGGER_PIN, ULTRA_ECHO_PIN, MAX_DISTANCE); // NewPing setup of pins and maximum distance.
 
-
+#endif
 
 
 /* ESP8266 available pins

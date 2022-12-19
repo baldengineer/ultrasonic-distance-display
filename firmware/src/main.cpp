@@ -1,30 +1,13 @@
 #include <Main.h>
 
-void setup_WIFI() {
-  WiFi.begin(WIFI_SSID, WIFI_PASS);
+extern void setup_WIFI();
+extern void setup_OTA();
+extern void led_keep_alive();
+extern void neo7_display_value(uint16_t value);
+extern void handle_sonar();
 
-  uint8_t notConnectedCounter = 0;
-  Serial.print("WiFi connecting...");
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(100);
-    Serial.print(".");
-    notConnectedCounter++;
-    if(notConnectedCounter > 128) { // Reset board if not connected after 5s
-        Serial.println("WiFi Failed");
-        //ESP.restart();
-        //while(1);
-    }
-  }
-  Serial.print("Connected!\nIP:");
-  Serial.println(WiFi.localIP());
-}
-
-void setup_OTA() {
-  ArduinoOTA.setHostname(WIFI_HOSTNAME);
-  ArduinoOTA.setPort(OTA_PORT);
-  ArduinoOTA.setPassword(OTA_PASS);
-  ArduinoOTA.begin();
-}
+Neo7Segment disp(PIXELS_DIGITS, PIXELS_PER_SEGMENT, PIXELS_PER_POINT, PIXELS_PIN);
+NewPing sonar(ULTRA_TRIGGER_PIN, ULTRA_ECHO_PIN, MAX_DISTANCE); // NewPing setup of pins and maximum distance.
 
 void setup() {
   Serial.begin(115200);
@@ -59,89 +42,18 @@ bool check_motion_PIR() {
   return previous_motion;
 }
 
-void neo7_display_value(uint16_t value) {
-  static uint16_t previous_value = 0;
-  char count_string[6];
-  sprintf(count_string, "%03d", value);
-  String digit = String( count_string );
-  uint8_t r,g,b;
-
-  // only do Neo updates when the value changes (especially useful for off)
-  if (previous_value == value)
-    return;
-  previous_value = value;
-
-  if (value >= 60) {
-    r = 255;
-    g = 255;
-    b = 255;
-  } 
-
-  if ((value < 60 ) && (value >= 10)) {
-    r = 0;
-    g = 255;
-    b = 0;
-  }
-
-  if ((value < 10)) {
-    r = 255;
-    g = 0;
-    b = 0;
-  }
-
-  bool motion_state = check_motion_PIR();
-  if (value == 0) {
-    disp.SetDigit(0," ", disp.Color(0,0,0));
-    disp.SetDigit(1," ", disp.Color(0,0,0));
-    if (motion_state)
-      disp.SetDigit(2,".", disp.Color(128,128,128));  
-    else 
-      disp.SetDigit(2," ", disp.Color(0,0,0));
-  } else {
-    // left to right
-    disp.SetDigit(0,String(digit.charAt(0)), disp.Color(r,g,b));
-    disp.SetDigit(1,String(digit.charAt(1)), disp.Color(r,g,b));
-    if (motion_state)
-     disp.SetDigit(2,(String(digit.charAt(2)) + "."), disp.Color(r,g,b)); 
-    else
-     disp.SetDigit(2,String(digit.charAt(2)), disp.Color(r,g,b));
-  }
-}
-
-void led_keep_alive() {
-  static uint32_t previous_millis = 0;
-  static bool led_state = true;
-  uint32_t led_delay = ERROR_LED_BLINK;
-
-  if (WiFi.status() == WL_CONNECTED)
-    led_delay = NORMAL_LED_BLINK;
-
-  if (millis() - previous_millis >= led_delay) {
-    previous_millis = millis();
-    led_state = !led_state;
-    digitalWrite(BLUE_LED_PIN, led_state);
-  }
-}
-
 void loop() {
   if (WiFi.status() == WL_CONNECTED)
     ArduinoOTA.handle();
 
   led_keep_alive();
+
   static uint32_t motion_timeout = 0;
   if (check_motion_PIR() == MOTION)
     motion_timeout = millis();
 
   if (millis() - motion_timeout <= MOTION_TIMEOUT_MILLISECONDS) {
-    static uint32_t previous_ping = 0;
-    if (millis() - previous_ping >= 500){
-      uint32_t ping_measurement = sonar.ping_cm(); // returns 0 if too big
-      if (ping_measurement == 0)
-        ping_measurement = 888;
-      neo7_display_value(uint16_t(ping_measurement));
-      Serial.print("Ping: "); Serial.println(ping_measurement); 
-      previous_ping = millis();
-    } 
+      handle_sonar();
   } else {
       neo7_display_value(0);
   }

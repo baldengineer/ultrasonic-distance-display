@@ -1,3 +1,5 @@
+#ifndef WIFI_CONFIG_H
+#define WIFI_CONFIG_H
 // rename to WIFI_CONFIG.h (after filling out the things)
 
 #define WIFI_SSID "something"
@@ -6,3 +8,5 @@
 
 #define OTA_PORT 8266
 #define OTA_PASS "password"
+
+#endif
