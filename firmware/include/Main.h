@@ -16,6 +16,10 @@
 #define PIR_MOTION_PIN    12
 #define NEO7_DATA_PIN     15
 #define BLUE_LED_PIN      2
+#define OTA_BUTTON_PIN    5
+#define OTHER_BUTTON_PIN  4
+#define PRESSED           0x0
+#define NOT_PRESSED       0x1
 
 #define NORMAL_LED_BLINK  1000
 #define ERROR_LED_BLINK   100
@@ -27,7 +31,7 @@
 #define PIXELS_PER_POINT    1   // CANNOT be higher than PIXELS_PER_SEGMENT
 
 // Ultrasonic Sensor (NewPing.h)
-#define MOTION_TIMEOUT_MILLISECONDS 15000
+#define MOTION_TIMEOUT_MILLISECONDS 5000
 #define MAX_DISTANCE 200
 
 #endif
@@ -45,8 +49,8 @@ IO16 - Wake up out of deep-sleep
 * IO12 SPI-MISO
 IO13 SPI-MOSI
 
-IO5 I2C-SCL
-IO4 I2C-SDA
+* IO5 I2C-SCL
+* IO4 I2C-SDA
 
 IO3 RX
 IO1 TX
