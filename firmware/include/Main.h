@@ -4,6 +4,7 @@
 #include <ArduinoOTA.h>
 #include <ESP8266WiFi.h>
 #include <WIFI_CONFIG.h>
+#include <PubSubClient.h>
 
 #ifndef MAIN_H
 #define MAIN_H

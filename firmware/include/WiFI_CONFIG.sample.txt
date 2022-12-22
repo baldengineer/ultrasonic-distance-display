@@ -9,4 +9,9 @@
 #define OTA_PORT 8266
 #define OTA_PASS "password"
 
+#define MQTT_SERVER     "your.mqttbroker.net"
+#define MQTT_SERVERPORT 8883
+#define MQTT_USERNAME "name"
+#define MQTT_PASSWORD "pass"
+
 #endif
