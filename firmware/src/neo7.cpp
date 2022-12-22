@@ -3,6 +3,16 @@
 extern bool check_motion_PIR();
 extern Neo7Segment disp;
 
+void good_neo7_display(uint16_t value, uint8_t r, uint8_t g, uint8_t b) {
+  char count_string[6];
+  sprintf(count_string, "%03d", value);
+  String digit = String( count_string );
+  
+  disp.SetDigit(0,String(digit.charAt(0)), disp.Color(r,g,b));
+  disp.SetDigit(1,String(digit.charAt(1)), disp.Color(r,g,b));
+  disp.SetDigit(2,String(digit.charAt(2)), disp.Color(r,g,b));
+}
+
 void neo7_display_value(uint16_t value) {
   static uint16_t previous_value = 0;
   char count_string[6];

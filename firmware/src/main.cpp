@@ -2,6 +2,7 @@
 
 extern void setup_WIFI();
 extern void setup_OTA();
+extern void new_setup_OTA();
 extern void led_keep_alive();
 extern void neo7_display_value(uint16_t value);
 extern void handle_sonar(bool print_to_serial);
@@ -102,16 +103,16 @@ bool check_motion_PIR() {
 }
 
 void loop() {
-  if (WiFi.status() == WL_CONNECTED) {
-    ArduinoOTA.handle();
-  //  mqtt_stay_alive();
-  }
+  // if (WiFi.status() == WL_CONNECTED) {
+  //   ArduinoOTA.handle();
+  // //  mqtt_stay_alive();
+  // }
 
   led_keep_alive();
   handle_buttons();
   if (OTA_ENABLE) {
-    Serial.println("This is where OTA enable would...");
     OTA_ENABLE = false;
+    new_setup_OTA();
   }
 
   static uint32_t motion_timeout = 0;
